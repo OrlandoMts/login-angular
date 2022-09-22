@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, FormBuilder, Validators } from "@angular/forms";
+import { FormGroup, FormBuilder, Validators } from "@angular/forms";
 import { Router } from '@angular/router';
+
+import { map, catchError, of } from "rxjs";
+
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -15,20 +19,33 @@ export class LoginComponent implements OnInit {
     password: ['', [Validators.required, Validators.minLength(6)] ]
   })
 
-  constructor(private fb: FormBuilder, private router: Router) { }
+  constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) { }
 
   ngOnInit(): void {
   }
 
-  save() {
+  login() {
     if(this.miFormulario.invalid){
       return
     }
-    console.log(this.miFormulario.value);
+    const {email, password} = this.miFormulario.value;
+
     this.miFormulario.reset();
 
-
-    this.router.navigate(['/home/dashboard']);
+    this.authService.login(email, password)
+        .pipe(
+          map( ({ok}) => ok),
+          catchError( err => of(false))
+        )
+        .subscribe({
+          next: (ok) => {
+            if( ok ) {
+              this.router.navigate(['/home/dashboard'])
+            } else {
+              console.log("No se pudo entrar")
+            }
+          }
+        });
   }
 
 }
