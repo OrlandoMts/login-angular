@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from "@angular/forms";
 import { Router } from '@angular/router';
 
-import { map, catchError, of } from "rxjs";
+import { map, catchError, of, tap } from "rxjs";
+// import Swal from 'sweetalert2';
+import Swal from 'sweetalert2';
 
 import { AuthService } from '../../services/auth.service';
 
@@ -13,6 +15,8 @@ import { AuthService } from '../../services/auth.service';
   ]
 })
 export class LoginComponent implements OnInit {
+
+  public msgError!: string;
 
   miFormulario: FormGroup = this.fb.group( {
     email: ['', [Validators.required, Validators.pattern("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$")] ],
@@ -34,6 +38,7 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(email, password)
         .pipe(
+          tap( (data)=> this.msgError = data.msg!), // Mensaje de error de la respuesta
           map( ({ok}) => ok),
           catchError( err => of(false))
         )
@@ -42,6 +47,11 @@ export class LoginComponent implements OnInit {
             if( ok ) {
               this.router.navigate(['/home/dashboard'])
             } else {
+              Swal.fire(
+                `${this.msgError}`,
+                '¿Ya tienes una cuenta?, da click en "Crear una aquí"',
+                'question'
+              )
               console.log("No se pudo entrar")
             }
           }

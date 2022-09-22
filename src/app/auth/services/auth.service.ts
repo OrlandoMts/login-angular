@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { environment } from 'src/environments/environment';
 import { AuthResponse, User } from '../interfaces/auth.interface';
-import { tap } from 'rxjs';
+import { catchError, of, tap, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +18,7 @@ export class AuthService {
     return { ...this._user }
   }
 
-  login( email: string, password: string) {
+  login( email: string, password: string): Observable<AuthResponse> {
     const url = `${this._APIURL}/auth`;
     const body = { email, password }
 
@@ -30,7 +30,8 @@ export class AuthService {
             name: user.name!
           }
         }
-      })
+      }),
+      catchError(err => of(err.error))
     );
 
   }
