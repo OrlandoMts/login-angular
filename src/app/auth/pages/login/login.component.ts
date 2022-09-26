@@ -29,6 +29,7 @@ export class LoginComponent implements OnInit {
   }
 
   login() {
+
     if(this.miFormulario.invalid){
       return
     }

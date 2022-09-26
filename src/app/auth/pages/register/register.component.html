@@ -1,4 +1,4 @@
-<form class="login100-form" autocomplete="off" [formGroup]="miFormulario" (ngSubmit)="sigin()">
+<form class="login100-form" autocomplete="off" [formGroup]="miFormulario" (ngSubmit)="signin()">
 
   <span class="login100-form-title p-b-49">
       Sigin
@@ -10,6 +10,14 @@
            type="text"
            formControlName="name"
            placeholder="Ingrese su nombre">
+    <span class="focus-input100"></span>
+  </div>
+  <div class="wrap-input100 m-b-23">
+    <span class="label-input100">Apellidos</span>
+    <input class="input100"
+           type="text"
+           formControlName="lastName"
+           placeholder="Ingrese sus apellidos">
     <span class="focus-input100"></span>
   </div>
   <div class="wrap-input100 m-b-23">

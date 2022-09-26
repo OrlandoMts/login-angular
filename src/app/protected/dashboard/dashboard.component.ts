@@ -1,4 +1,5 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { tap } from 'rxjs';
 import { AuthService } from 'src/app/auth/services/auth.service';
 
 @Component({
@@ -16,12 +17,17 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   constructor(private authService: AuthService) { }
+
   ngAfterViewInit(): void {
-    console.log('after', this.user);
   }
 
+
   ngOnInit(): void {
-    console.log('init', this.user)
+    this.authService.infoUser().subscribe();
+  }
+
+  updateUser() {
+    console.log('Información actualizada...')
   }
 
 
