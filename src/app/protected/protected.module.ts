@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ProtectedRoutingModule } from './protected-routing.module';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ComponentsModule } from '../shared/components/components.module';
+import { ReactiveFormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -13,6 +14,7 @@ import { ComponentsModule } from '../shared/components/components.module';
   imports: [
     CommonModule,
     ProtectedRoutingModule,
+    ReactiveFormsModule,
     ComponentsModule
   ]
 })

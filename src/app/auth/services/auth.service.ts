@@ -113,6 +113,20 @@ export class AuthService {
 
   }
 
+  updateUser(name: string, lastName: string,
+            address: string, city: string,
+            country: string, postalCode: number,
+            about: string): Observable<AuthResponse> {
+    const url = `${this._APIURL}/auth/update-account`;
+    const headers = new HttpHeaders()
+      .set('Authorization', localStorage.getItem('token-app') || '');
+
+
+    const body = {name, lastName, address, city, country, postalCode, about};
+
+    return this.http.put<AuthResponse>(url, body, {headers})
+  }
+
   logout() {
     localStorage.removeItem('token-app');
   }
