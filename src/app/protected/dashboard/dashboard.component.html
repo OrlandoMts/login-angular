@@ -143,7 +143,7 @@
             <div class="pl-lg-4">
               <div class="form-group">
                 <label>Sobre mí</label>
-                <textarea formControlName="about" rows="4" class="form-control form-control-alternative" placeholder="Cuenta sobre ti ...">{{user.about || ''}}</textarea>
+                <textarea formControlName="about" rows="4" class="form-control form-control-alternative" [placeholder]="user.about"></textarea>
               </div>
               <button class="btn btn-info" type="submit" (click)="updateUser()" [ngStyle]="{'background-color': miFormulario.invalid ? 'gray' : 'blue' }" [disabled]="miFormulario.invalid">Actualizar datos</button>
             </div>
