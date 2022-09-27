@@ -7,15 +7,6 @@ export interface AuthResponse {
   msg?: string
 }
 
-// export interface User {
-//   uid?: string,
-//   name?: string,
-//   lastName?: string,
-//   lol?: string
-// }
-
-
-
 export interface User {
   uid: string,
   name: string,

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, DoCheck } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { catchError, Subscription, tap } from 'rxjs';
+import { catchError, of, Subscription, tap } from 'rxjs';
 import { User } from 'src/app/auth/interfaces/auth.interface';
 import { AuthService } from 'src/app/auth/services/auth.service';
 
@@ -10,7 +10,7 @@ import { AuthService } from 'src/app/auth/services/auth.service';
   styles: [
   ]
 })
-export class DashboardComponent implements OnInit, DoCheck, OnDestroy{
+export class DashboardComponent implements OnInit, OnDestroy{
   private _updateUserSub!: Subscription;
   private _infoUserSub!: Subscription;
 
@@ -31,8 +31,10 @@ export class DashboardComponent implements OnInit, DoCheck, OnDestroy{
   public userData(): void {
     this.authService.userObs.pipe(
       tap( data => {console.log('data: ', data); this.user = data;}),
-      catchError(err => err)
-    ).subscribe(); // (data: User) => this.user = data
+      catchError(err => of(err))
+    ).subscribe((data: User) => this.user = data); // (data: User) => this.user = data
+
+    // this.authService.userObs.subscribe((data: User) => this.user = data); // (data: User) => this.user = data
   }
 
   constructor(private authService: AuthService, private fb: FormBuilder) {
@@ -44,10 +46,7 @@ export class DashboardComponent implements OnInit, DoCheck, OnDestroy{
     this.userData();
   }
 
-  ngDoCheck(): void {
-    //this.userData(); //Intente hacerlo sin que tenga que recargar la pagina
-    console.log('ngdocheck');
-  }
+
 
   updateUser() {
     console.log('Información actualizada...');
@@ -59,6 +58,7 @@ export class DashboardComponent implements OnInit, DoCheck, OnDestroy{
   }
 
   ngOnDestroy(): void {
+    //TODO: Validar si existen
     this._infoUserSub.unsubscribe();
     this._updateUserSub.unsubscribe();
   }
