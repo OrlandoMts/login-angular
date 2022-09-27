@@ -2,21 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { environment } from 'src/environments/environment';
 import { AuthResponse, User } from '../interfaces/auth.interface';
-import { catchError, of, tap, Observable, map } from 'rxjs';
+import { catchError, of, tap, Observable, map, Subject, BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-
+  public USER!: User; // Copio la interfaz en una variable...
   private _APIURL: string = environment.api_backend;
-  private _user!: User;
+  // private _userSub$: Subject<User> = new Subject<User>();
+  private _userSub$ = new BehaviorSubject<User>(this.USER);
+  public userObs = this._userSub$.asObservable();
 
   constructor(private http: HttpClient) { }
-
-  get user() {
-    return { ...this._user }
-  }
 
   login( email: string, password: string): Observable<AuthResponse> {
     const url = `${this._APIURL}/auth`;
@@ -27,14 +25,10 @@ export class AuthService {
         console.log(user);
         if (user.ok) {
           localStorage.setItem('token-app', user.token!)
-          this._user = {
+          this._userSub$.next( {
             uid: user.user?.uid!,
             name: user.user?.name!,
-            // lastName: user.lastName,
-            // email: user.email
-            // lastName: user
-            // agregar mas propiedades
-          }
+          })
         }
       }),
       catchError(err => of(err.error))
@@ -50,10 +44,10 @@ export class AuthService {
       tap( (user) => {
         if(user.ok) {
           localStorage.setItem('token-app', user.token!)
-          this._user = {
+          this._userSub$.next ({
             uid: user.user?.uid!,
             name: user.user?.name!,
-          }
+          })
         }
       }),
       catchError(err => of(err.error))
@@ -74,11 +68,11 @@ export class AuthService {
                     .pipe(
                       tap( resp => {
                         localStorage.setItem('token-app', resp.token!)
-                          this._user = {
+                          this._userSub$.next( {
                             uid: resp.uid!,
                             name: resp.user?.name!,
 
-                          }
+                          })
                       }),
                       map( resp => {
                         return resp.ok
@@ -95,7 +89,7 @@ export class AuthService {
     return this.http.get<AuthResponse>(url, {headers}).pipe(
       tap( (data) => {
         const {user} = data;
-        this._user = {
+        this._userSub$.next( {
           uid: user?.uid!,
           name: user?.name!,
           lastName: user?.lastName!,
@@ -105,7 +99,7 @@ export class AuthService {
           country: user?.country!,
           postalCode: user?.postalCode!,
           about: user?.about!,
-        }
+        })
       }),
       map( ({user}) => user ),
       catchError(err => of(err))

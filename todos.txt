@@ -1,0 +1,5 @@
+Verificar que se se hagan las unsubscribe de los observables desde el ondestroy
+
+TODO: optimizar
+1. penAllSubscriptions - Manejar una sola funcion que ejecute las subs y ejecutar la funcion en el ngOnit.
+ASi sera mas facil hacer el unsubscribe

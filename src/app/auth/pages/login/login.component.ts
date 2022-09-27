@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from "@angular/forms";
 import { Router } from '@angular/router';
 
-import { map, catchError, of, tap } from "rxjs";
+import { map, catchError, of, tap, Subscription } from "rxjs";
 // import Swal from 'sweetalert2';
 import Swal from 'sweetalert2';
 
@@ -14,8 +14,9 @@ import { AuthService } from '../../services/auth.service';
   styles: [
   ]
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
 
+  private _loginSub!: Subscription;
   public msgError!: string;
 
   miFormulario: FormGroup = this.fb.group( {
@@ -28,6 +29,10 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  ngOnDestroy(): void {
+    if (this._loginSub && !this._loginSub.closed) this._loginSub.unsubscribe();
+  }
+
   login() {
 
     if(this.miFormulario.invalid){
@@ -37,7 +42,7 @@ export class LoginComponent implements OnInit {
 
     this.miFormulario.reset();
 
-    this.authService.login(email, password)
+    this._loginSub = this.authService.login(email, password)
         .pipe(
           tap( (data)=> this.msgError = data.msg!), // Mensaje de error de la respuesta
           map( ({ok}) => ok),

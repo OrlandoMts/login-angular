@@ -25,6 +25,5 @@ export interface User {
   city?: string,
   country?: string,
   postalCode?: number,
-  about?: string,
-  lol?: string
+  about?: string
 }

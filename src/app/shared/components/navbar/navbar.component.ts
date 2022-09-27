@@ -40,8 +40,4 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['/auth/login'])
   }
 
-  get user() {
-    return this.authService.user;
-  }
-
 }
