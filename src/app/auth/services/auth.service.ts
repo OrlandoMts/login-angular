@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { environment } from 'src/environments/environment';
 import { AuthResponse, User } from '../interfaces/auth.interface';
-import { catchError, of, tap, Observable, map } from 'rxjs';
+import { catchError, of, tap, Observable, map, BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -12,11 +12,17 @@ export class AuthService {
   private _APIURL: string = environment.api_backend;
   private _user!: User;
 
+  // Paso 1. Crear el Subject
+  // Paso 2. Hacer las emisiones
+  // Paso 3. Suscribirme a las emisiones
+  private _userSub$ = new BehaviorSubject<User>(this._user);
+  public userObs$ = this._userSub$.asObservable();
+
   constructor(private http: HttpClient) { }
 
-  get user() {
-    return { ...this._user }
-  }
+  // get user() {
+  //   return { ...this._user }
+  // }
 
   login( email: string, password: string): Observable<AuthResponse> {
     const url = `${this._APIURL}/auth`;
@@ -28,13 +34,10 @@ export class AuthService {
         if (user.ok) {
           localStorage.setItem('token-app', user.token!)
           this._user = {
-            uid: user.user?.uid!,
-            name: user.user?.name!,
-            // lastName: user.lastName,
-            // email: user.email
-            // lastName: user
-            // agregar mas propiedades
+            _id: user.user?._id!,
+            name: user.user?.name!
           }
+          this._userSub$.next(this._user); // Paso 2
         }
       }),
       catchError(err => of(err.error))
@@ -51,9 +54,10 @@ export class AuthService {
         if(user.ok) {
           localStorage.setItem('token-app', user.token!)
           this._user = {
-            uid: user.user?.uid!,
+            _id: user.user?._id!,
             name: user.user?.name!,
           }
+          this._userSub$.next(this._user); // Paso 2
         }
       }),
       catchError(err => of(err.error))
@@ -75,10 +79,11 @@ export class AuthService {
                       tap( resp => {
                         localStorage.setItem('token-app', resp.token!)
                           this._user = {
-                            uid: resp.uid!,
+                            _id: resp.uid!,
                             name: resp.user?.name!,
 
                           }
+                          this._userSub$.next(this._user); // Paso 2
                       }),
                       map( resp => {
                         return resp.ok
@@ -96,7 +101,7 @@ export class AuthService {
       tap( (data) => {
         const {user} = data;
         this._user = {
-          uid: user?.uid!,
+          _id: user?._id!,
           name: user?.name!,
           lastName: user?.lastName!,
           email: user?.email!,
@@ -105,7 +110,8 @@ export class AuthService {
           country: user?.country!,
           postalCode: user?.postalCode!,
           about: user?.about!,
-        }
+        };
+        this._userSub$.next(this._user); // Paso 2
       }),
       map( ({user}) => user ),
       catchError(err => of(err))

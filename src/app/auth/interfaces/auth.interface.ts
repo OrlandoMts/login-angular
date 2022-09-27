@@ -17,7 +17,7 @@ export interface AuthResponse {
 
 
 export interface User {
-  uid: string,
+  _id: string,
   name: string,
   lastName?: string,
   email?: string,
