@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { catchError, Observer, of, Subscription, tap } from 'rxjs';
 import { User } from 'src/app/auth/interfaces/auth.interface';
@@ -12,10 +12,9 @@ import { AuthService } from 'src/app/auth/services/auth.service';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
 
-  public counter: number = 0;
-
   public user!: User;
-  private _userSubs!: Subscription;
+  private _userSubs!: Subscription; //BehaviorSubject
+  private _userInfoSubs!: Subscription;
 
   public miFormulario: FormGroup = this.fb.group({
     email: [{value: '', disabled: true}],
@@ -32,23 +31,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
-    this.authService.infoUser().subscribe();
-    this.userData();
+    this.closeAllSubscriptions();
+    this.runSubscriptions();
   }
 
   ngOnDestroy(): void {
-    if (this._userSubs && !this._userSubs.closed) this._userSubs.unsubscribe();
+    this.closeAllSubscriptions()
   }
 
-  // Obtiene el objeto del usuario del servicio
-  public userData() {
-    this._userSubs = this.authService.userObs$
-          .pipe(
-            tap( data => console.log(data)),
-            catchError(err => of(err))
-          ).subscribe( (data: User) => this.printView(data));
+  runSubscriptions() {
+    // Obtiene el objeto completo del usuario y "pinta" los datos del componente
+    this._userInfoSubs = this.authService.infoUser().subscribe(user => console.log('infoUser ', user));
 
-    return this._userSubs;
+    // Obtiene el objeto del usuario para que el componente pueda acceder a sus propiedades
+    this._userSubs = this.authService.userObs$
+          .subscribe( (user: User) => this.user = user );
+
+
+  }
+
+  closeAllSubscriptions() {
+    if (this._userInfoSubs && !this._userInfoSubs.closed) this._userInfoSubs.unsubscribe();
+    if (this._userSubs && !this._userSubs.closed) this._userSubs.unsubscribe();
   }
 
   // Ejecutada desde el formulario
@@ -56,20 +60,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.miFormulario.invalid){
       return
     }
-    this.counter +=1;
     const {name, lastName, address, city, country, postalCode, about} = this.miFormulario.value;
     this.authService.updateUser(name, lastName, address, city, country, postalCode, about).subscribe();
     console.log('Información actualizada...');
-    // location.reload(); // Funciona pero no es lo que busco
-
-    this.authService.infoUser().subscribe();
-  }
-
-  public printView(user: User) {
-    if (!user) {
-      return
-    }
-    this.user = user;
   }
 
 }

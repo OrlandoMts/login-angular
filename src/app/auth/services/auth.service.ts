@@ -30,7 +30,7 @@ export class AuthService {
 
     return this.http.post<AuthResponse>(url, body).pipe(
       tap((user) => {
-        console.log(user);
+        // console.log(user);
         if (user.ok) {
           localStorage.setItem('token-app', user.token!)
           this._user = {
@@ -130,12 +130,16 @@ export class AuthService {
 
     const body = {name, lastName, address, city, country, postalCode, about};
 
-    return this.http.put<AuthResponse>(url, body, {headers})
+    return this.http.put<AuthResponse>(url, body, {headers});
   }
 
   logout() {
     localStorage.removeItem('token-app');
   }
+
+  // getUser(user: User): void {
+  //   this._userSub$.next(user);
+  // }
 
 
 }
