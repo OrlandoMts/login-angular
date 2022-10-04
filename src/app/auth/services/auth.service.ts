@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { environment } from 'src/environments/environment';
 import { AuthResponse, User } from '../interfaces/auth.interface';
-import { catchError, of, tap, Observable, map, BehaviorSubject } from 'rxjs';
+import { catchError, of, tap, Observable, map, BehaviorSubject, Subscription } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +15,7 @@ export class AuthService {
   // Paso 1. Crear el Subject
   // Paso 2. Hacer las emisiones
   // Paso 3. Suscribirme a las emisiones
-  private _userSub$ = new BehaviorSubject<User>(this._user);
+  private _userSub$ = new BehaviorSubject<User | undefined>(this._user);
   public userObs$ = this._userSub$.asObservable();
 
   constructor(private http: HttpClient) { }
@@ -92,54 +92,47 @@ export class AuthService {
                     )
   };
 
-  infoUser(): Observable<AuthResponse> {
+  infoUser(): void {
     const url = `${this._APIURL}/auth/get-user`;
     const headers = new HttpHeaders()
       .set('Authorization', localStorage.getItem('token-app') || '');
-
-    return this.http.get<AuthResponse>(url, {headers}).pipe(
-      tap( (data) => {
-        const {user} = data;
-        this._user = {
-          _id: user?._id!,
-          name: user?.name!,
-          lastName: user?.lastName!,
-          email: user?.email!,
-          address: user?.address!,
-          city: user?.city!,
-          country: user?.country!,
-          postalCode: user?.postalCode!,
-          about: user?.about!,
-        };
-        this._userSub$.next(this._user); // Paso 2
-      }),
-      map( ({user}) => user ),
-      catchError(err => of(err))
-    );
-
+    let subs = this.http.get<AuthResponse>(url, { headers}).pipe(
+      catchError((err) => of(err))
+    ).subscribe((res: AuthResponse) => {
+      if(res.ok){
+        this._userSub$.next(res?.user);
+        subs.unsubscribe();
+      }
+    });
   }
 
   updateUser(name: string, lastName: string,
             address: string, city: string,
             country: string, postalCode: number,
-            about: string): Observable<AuthResponse> {
+            about: string): void {
     const url = `${this._APIURL}/auth/update-account`;
     const headers = new HttpHeaders()
       .set('Authorization', localStorage.getItem('token-app') || '');
-
-
     const body = {name, lastName, address, city, country, postalCode, about};
-
-    return this.http.put<AuthResponse>(url, body, {headers});
+    let subs = this.http.put<AuthResponse>(url, body, {headers}).pipe(
+      catchError((err) => of(err))
+    ).subscribe((res: AuthResponse) => {
+      if(res.ok) {
+        this._userSub$.next(res?.user);
+        this.infoUser();
+        subs.unsubscribe();
+      }
+    });
   }
 
   logout() {
     localStorage.removeItem('token-app');
   }
 
-  // getUser(user: User): void {
-  //   this._userSub$.next(user);
-  // }
+  setUser(user: any): void {
+    console.log("usario enviado desde el componente ", user);
+    // this._userSub$.next(user);
+  }
 
 
 }

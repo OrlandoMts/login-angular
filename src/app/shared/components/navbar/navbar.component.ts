@@ -25,8 +25,7 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit() {
     this.listTitles = ROUTES.filter(listTitle => listTitle);
-
-    this._userSub$ = this.authService.userObs$.subscribe(value => this.user = value.name);
+    this._userSub$ = this.authService.userObs$.subscribe(value => value && (this.user = value?.name));
   }
 
   getTitle(){

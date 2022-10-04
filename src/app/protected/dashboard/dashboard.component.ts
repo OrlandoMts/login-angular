@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { catchError, Observer, of, Subscription, tap } from 'rxjs';
-import { User } from 'src/app/auth/interfaces/auth.interface';
+import { AuthResponse, User } from 'src/app/auth/interfaces/auth.interface';
 import { AuthService } from 'src/app/auth/services/auth.service';
 
 @Component({
@@ -13,8 +13,7 @@ import { AuthService } from 'src/app/auth/services/auth.service';
 export class DashboardComponent implements OnInit, OnDestroy {
 
   public user!: User;
-  private _userSubs!: Subscription; //BehaviorSubject
-  private _userInfoSubs!: Subscription;
+  private _userSubs!: Subscription;
 
   public miFormulario: FormGroup = this.fb.group({
     email: [{value: '', disabled: true}],
@@ -31,7 +30,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
-    this.closeAllSubscriptions();
     this.runSubscriptions();
   }
 
@@ -40,29 +38,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   runSubscriptions() {
-    // Obtiene el objeto completo del usuario y "pinta" los datos del componente
-    this._userInfoSubs = this.authService.infoUser().subscribe(user => console.log('infoUser ', user));
-
-    // Obtiene el objeto del usuario para que el componente pueda acceder a sus propiedades
-    this._userSubs = this.authService.userObs$
-          .subscribe( (user: User) => this.user = user );
-
-
+    this.authService.infoUser();
+    this._userSubs = this.authService.userObs$.subscribe( (_user: User| undefined) => _user && (this.user = _user) && ( this.miFormulario.get("email")?.setValue(_user?.email) ) );
   }
 
   closeAllSubscriptions() {
-    if (this._userInfoSubs && !this._userInfoSubs.closed) this._userInfoSubs.unsubscribe();
     if (this._userSubs && !this._userSubs.closed) this._userSubs.unsubscribe();
   }
 
   // Ejecutada desde el formulario
   public changeUser() {
-    if (this.miFormulario.invalid){
-      return
-    }
+    if (this.miFormulario.invalid) return;
     const {name, lastName, address, city, country, postalCode, about} = this.miFormulario.value;
-    this.authService.updateUser(name, lastName, address, city, country, postalCode, about).subscribe();
+    this.authService.updateUser(name, lastName, address, city, country, postalCode, about);
+    // this.miFormulario.get("name")?.setValue(name);
     console.log('Información actualizada...');
   }
-
 }
